@@ -3,340 +3,494 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InfinityDrop v4 | Multi-File Ready</title>
+    <title>InfinityDrop V5 | Premium</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0f172a;
-            --surface: #1e293b;
-            --primary: #3b82f6;
-            --text: #f1f5f9;
-            --success: #22c55e;
-            --border: #334155;
+            --primary: #6366f1;
+            --accent: #a855f7;
+            --glass: rgba(255, 255, 255, 0.07);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text: #ffffff;
+            --text-muted: #94a3b8;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
 
         body {
-            background-color: var(--bg);
+            background-color: #0f172a;
             color: var(--text);
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
-            padding: 1rem;
-        }
-
-        .app {
-            width: 100%;
-            max-width: 480px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 1.5rem;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
-
-        h1 { font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--primary); text-align: center; }
-        .status { text-align: center; font-size: 0.85rem; color: #94a3b8; margin-bottom: 1.5rem; }
-
-        .section { margin-bottom: 1.5rem; }
-        label { display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 0.5rem; }
-
-        input[type="text"] {
-            width: 100%;
-            background: #0f172a;
-            border: 1px solid var(--border);
-            color: white;
-            padding: 0.75rem;
-            border-radius: 8px;
-            margin-bottom: 0.5rem;
-            font-family: monospace;
-        }
-
-        button {
-            width: 100%;
-            padding: 0.75rem;
-            border-radius: 8px;
-            border: none;
-            background: var(--primary);
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-        button:hover { opacity: 0.9; }
-        button:disabled { background: #475569; cursor: not-allowed; }
-
-        .file-area {
-            border: 2px dashed var(--border);
-            border-radius: 12px;
-            padding: 2rem;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.2s;
+            padding: 20px;
+            overflow: hidden;
             position: relative;
         }
-        .file-area:hover { border-color: var(--primary); background: rgba(59, 130, 246, 0.1); }
-        .file-area input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 
-        .progress-container { margin-top: 1rem; display: none; }
-        .progress-bar { height: 6px; background: #334155; border-radius: 3px; overflow: hidden; margin-top: 0.5rem; }
-        .progress-fill { height: 100%; width: 0%; background: var(--success); transition: width 0.1s; }
-        .progress-text { display: flex; justify-content: space-between; font-size: 0.75rem; color: #cbd5e1; }
-
-        .log-box {
-            margin-top: 1rem;
-            padding: 0.75rem;
-            background: #020617;
-            border-radius: 8px;
-            font-family: monospace;
-            font-size: 0.7rem;
-            color: #94a3b8;
-            height: 100px;
-            overflow-y: auto;
+        /* Ambient Background Mesh */
+        .ambient-light {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+            opacity: 0.2;
+            filter: blur(80px);
+            z-index: -1;
+            animation: float 10s infinite alternate;
+        }
+        .ambient-light.two {
+            right: 0; bottom: 0;
+            background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+            animation-delay: -5s;
         }
 
-        .hidden { display: none; }
+        @keyframes float { 0% { transform: translate(0, 0); } 100% { transform: translate(50px, 50px); } }
+
+        /* Glass Card */
+        .app-card {
+            width: 100%;
+            max-width: 440px;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            padding: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: height 0.3s ease;
+        }
+
+        header { text-align: center; margin-bottom: 2rem; }
+        h1 { font-weight: 600; letter-spacing: -0.5px; background: linear-gradient(to right, #fff, #cbd5e1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .status-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 14px; border-radius: 20px;
+            background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border);
+            font-size: 0.75rem; margin-top: 10px; color: var(--text-muted);
+        }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; transition: background 0.3s; }
+        .dot.online { background: #22c55e; box-shadow: 0 0 10px #22c55e; }
+
+        /* Inputs & Buttons */
+        .input-group {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            transition: border-color 0.3s;
+        }
+        .input-group:focus-within { border-color: var(--primary); }
+
+        input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 12px 16px;
+            font-size: 1rem;
+            outline: none;
+            font-family: 'Outfit', monospace; /* Monospace for ID */
+        }
+
+        .btn-icon {
+            padding: 10px; border-radius: 12px; border: none;
+            background: rgba(255,255,255,0.1); color: white;
+            cursor: pointer; margin-right: 4px;
+            transition: all 0.2s;
+        }
+        .btn-icon:hover { background: rgba(255,255,255,0.2); }
+
+        .btn-primary {
+            width: 100%; padding: 16px;
+            border-radius: 16px; border: none;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white; font-weight: 600; font-size: 1rem;
+            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(99, 102, 241, 0.5); }
+        .btn-primary:disabled { opacity: 0.7; cursor: wait; transform: none; }
+
+        /* History Section */
+        .history-section { margin-top: 2rem; }
+        .section-title { font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; letter-spacing: 1px; }
+        .history-list { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
+        .history-item {
+            flex-shrink: 0;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--glass-border);
+            padding: 10px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+        .history-item:hover { background: rgba(255,255,255,0.1); border-color: var(--primary); }
+        
+        /* Transfer Area */
+        .transfer-area {
+            display: none;
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
+        .drop-zone {
+            border: 2px dashed rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            margin-bottom: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .drop-zone:hover { border-color: var(--primary); background: rgba(99, 102, 241, 0.05); }
+        .drop-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+        
+        .progress-bar {
+            height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; margin-top: 15px;
+        }
+        .progress-fill { height: 100%; width: 0%; background: var(--primary); transition: width 0.1s; }
+
+        .hidden { display: none !important; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Toast */
+        .toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.8); color: white; padding: 12px 24px;
+            border-radius: 50px; font-size: 0.9rem; pointer-events: none;
+            opacity: 0; transition: 0.3s; z-index: 100; backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+        }
+        .toast.visible { opacity: 1; transform: translateX(-50%) translateY(-10px); }
+
     </style>
 </head>
 <body>
 
-<div class="app">
-    <h1>InfinityDrop v4</h1>
-    <div class="status" id="status-text">Initializing...</div>
+    <div class="ambient-light"></div>
+    <div class="ambient-light two"></div>
 
-    <div id="panel-connect" class="section">
-        <label>Your ID</label>
-        <div style="display: flex; gap: 8px; margin-bottom: 1rem;">
-            <input type="text" id="my-id" readonly onclick="this.select()">
-            <button style="width: auto;" onclick="copyId()">Copy</button>
+    <div class="app-card">
+        <header>
+            <h1>InfinityDrop</h1>
+            <div class="status-badge">
+                <div class="dot" id="status-dot"></div>
+                <span id="status-text">Connecting...</span>
+            </div>
+        </header>
+
+        <div id="panel-connect">
+            <div class="input-group">
+                <input type="text" id="my-id" readonly value="Generating ID..." style="font-weight: bold; color: var(--primary);">
+                <button class="btn-icon" onclick="copyId()" title="Copy ID">📋</button>
+            </div>
+
+            <div class="input-group">
+                <input type="text" id="partner-id" placeholder="Enter Partner ID">
+            </div>
+            
+            <button class="btn-primary" id="btn-connect" onclick="connectToPeer()">Connect Now</button>
+
+            <div class="history-section" id="history-section">
+                <div class="section-title">Recent Connections</div>
+                <div class="history-list" id="history-list">
+                    <div style="font-size: 0.8rem; color: var(--text-muted); font-style: italic;">No recent history</div>
+                </div>
+            </div>
         </div>
 
-        <label>Partner ID</label>
-        <input type="text" id="partner-id" placeholder="Paste ID here">
-        <button onclick="connectToPeer()" id="btn-connect">Connect</button>
+        <div id="panel-transfer" class="transfer-area">
+            <div class="drop-zone">
+                <input type="file" id="file-input">
+                <div style="font-size: 3rem; margin-bottom: 10px; filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.5));">🚀</div>
+                <h3 id="file-label" style="font-weight: 400;">Tap to send files</h3>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">High Speed • Secure</p>
+            </div>
+
+            <div id="progress-wrapper" class="hidden">
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 5px;">
+                    <span id="transfer-status">Sending...</span>
+                    <span id="transfer-pct">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+            </div>
+
+            <button class="btn-icon" onclick="disconnect()" style="width: 100%; margin-top: 1rem; background: rgba(255,255,255,0.05);">Disconnect</button>
+        </div>
     </div>
 
-    <div id="panel-transfer" class="section hidden">
-        <div class="file-area">
-            <input type="file" id="file-input">
-            <div style="font-size: 2rem;">📂</div>
-            <div id="file-label">Tap to Send File</div>
-        </div>
+    <div id="toast" class="toast">Notification</div>
 
-        <div class="progress-container" id="progress-container">
-            <div class="progress-text">
-                <span id="transfer-msg">Waiting...</span>
-                <span id="transfer-pct">0%</span>
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="progress-fill"></div>
-            </div>
-        </div>
-    </div>
+    <script>
+        // --- UTILS: SHORT ID GENERATOR ---
+        function generateShortId() {
+            // Generate a random 5-char string (e.g., "K9-X2")
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // No O, 0, I, 1 to avoid confusion
+            let result = '';
+            for (let i = 0; i < 2; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
+            result += '-';
+            for (let i = 0; i < 2; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
+            return result;
+        }
 
-    <div class="log-box" id="logs"></div>
-</div>
-
-<script>
-    // --- 1. CONFIGURATION ---
-    const iceServers = [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' },
-    ];
-
-    const peer = new Peer({
-        debug: 1,
-        secure: true,
-        config: { iceServers: iceServers }
-    });
-
-    let conn = null;
-    let isTransferring = false;
-
-    // Logging Utility
-    function log(msg) {
-        const box = document.getElementById('logs');
-        const time = new Date().toLocaleTimeString().split(' ')[0];
-        box.innerHTML += `<div>[${time}] ${msg}</div>`;
-        box.scrollTop = box.scrollHeight;
-    }
-
-    // --- 2. CONNECTION ---
-    peer.on('open', (id) => {
-        document.getElementById('my-id').value = id;
-        document.getElementById('status-text').innerText = "Online - Ready to Connect";
-        log("ID Generated.");
-    });
-
-    peer.on('connection', (c) => {
-        conn = c;
-        setupConnection();
-        log("Incoming connection...");
-    });
-
-    peer.on('error', (err) => {
-        log("Error: " + err.type);
-        document.getElementById('btn-connect').disabled = false;
-        document.getElementById('btn-connect').innerText = "Connect";
-    });
-
-    function connectToPeer() {
-        const dest = document.getElementById('partner-id').value.trim();
-        if(!dest) return alert("Enter an ID");
+        // --- 1. CONFIGURATION ---
+        // Retry logic for ID collision
+        let myId = generateShortId();
         
-        document.getElementById('btn-connect').disabled = true;
-        document.getElementById('btn-connect').innerText = "Connecting...";
-        
-        conn = peer.connect(dest, { reliable: true }); // Reliable: true ensures TCP-like delivery
-        setupConnection();
-    }
-
-    function setupConnection() {
-        conn.on('open', () => {
-            document.getElementById('panel-connect').classList.add('hidden');
-            document.getElementById('panel-transfer').classList.remove('hidden');
-            document.getElementById('status-text').innerText = "Connected Securely";
-            log("Connected to partner.");
+        const peer = new Peer(myId, {
+            debug: 1,
+            secure: true,
+            config: {
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' }
+                ]
+            }
         });
 
-        conn.on('data', (data) => handleData(data));
-        
-        conn.on('close', () => {
-            alert("Connection Lost");
-            location.reload();
-        });
-    }
+        let conn = null;
+        let isTransferring = false;
 
-    // --- 3. SEND LOGIC ---
-    const CHUNK_SIZE = 16 * 1024; // 16KB
+        // UI References
+        const ui = {
+            myId: document.getElementById('my-id'),
+            partnerId: document.getElementById('partner-id'),
+            connectBtn: document.getElementById('btn-connect'),
+            panelConnect: document.getElementById('panel-connect'),
+            panelTransfer: document.getElementById('panel-transfer'),
+            statusDot: document.getElementById('status-dot'),
+            statusText: document.getElementById('status-text'),
+            historyList: document.getElementById('history-list'),
+            fileInput: document.getElementById('file-input'),
+            fileLabel: document.getElementById('file-label'),
+            progressWrapper: document.getElementById('progress-wrapper'),
+            progressFill: document.getElementById('progress-fill'),
+            transferStatus: document.getElementById('transfer-status'),
+            transferPct: document.getElementById('transfer-pct')
+        };
 
-    document.getElementById('file-input').addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if(!file) return;
-        if(isTransferring) return alert("Wait for current transfer to finish");
-        
-        sendFile(file);
-    });
-
-    function sendFile(file) {
-        isTransferring = true;
-        document.getElementById('progress-container').style.display = 'block';
-        document.getElementById('file-label').innerText = "Sending: " + file.name;
-        
-        // 1. Send Header
-        conn.send({
-            type: 'header',
-            name: file.name,
-            size: file.size,
-            mime: file.type
+        // --- 2. INITIALIZATION & ID HANDLING ---
+        peer.on('open', (id) => {
+            myId = id;
+            ui.myId.value = id;
+            ui.statusDot.classList.add('online');
+            ui.statusText.innerText = "Online";
+            loadHistory();
         });
 
-        log(`Starting send: ${file.name}`);
+        // Handle ID Collision (Rare with 32^4 combos, but good to handle)
+        peer.on('error', (err) => {
+            if (err.type === 'unavailable-id') {
+                // ID taken, generate new one and reload (simple fix)
+                myId = generateShortId();
+                peer.reconnect(); 
+            } else {
+                showToast("Error: " + err.type);
+                resetUI();
+            }
+        });
 
-        const reader = new FileReader();
-        let offset = 0;
+        peer.on('connection', (c) => {
+            conn = c;
+            handleConnection();
+        });
 
-        reader.onload = (e) => {
-            // 2. Send Chunk
-            conn.send({
-                type: 'chunk',
-                data: e.target.result
+        // --- 3. CONNECTION LOGIC ---
+        function connectToPeer(storedId = null) {
+            const destId = storedId || ui.partnerId.value.trim().toUpperCase();
+            if (!destId) return showToast("Please enter an ID");
+            if (destId === myId) return showToast("Cannot connect to self");
+
+            ui.connectBtn.disabled = true;
+            ui.connectBtn.innerText = "Connecting...";
+            ui.statusText.innerText = "Connecting...";
+
+            conn = peer.connect(destId, { reliable: true });
+            handleConnection();
+        }
+
+        function handleConnection() {
+            conn.on('open', () => {
+                // Connection Success
+                ui.panelConnect.classList.add('hidden');
+                ui.panelTransfer.style.display = 'block'; // Block for animation
+                ui.statusText.innerText = "Connected to " + conn.peer;
+                
+                // Save to History
+                saveToHistory(conn.peer);
+                
+                showToast("Connected Successfully!");
             });
 
-            offset += e.target.result.byteLength;
-            updateUI(offset, file.size, "Sending...");
-
-            if(offset < file.size) {
-                readNextChunk();
-            } else {
-                // 3. Send Finish Flag (Crucial for closing the file on receiver side)
-                conn.send({ type: 'end' });
-                log("File sent. Resetting...");
-                finishTransfer(true);
-            }
-        };
-
-        const readNextChunk = () => {
-            const slice = file.slice(offset, offset + CHUNK_SIZE);
-            reader.readAsArrayBuffer(slice);
-        };
-
-        readNextChunk();
-    }
-
-    // --- 4. RECEIVE LOGIC ---
-    let incomingFiles = []; // Buffer
-    let incomingMeta = null;
-    let receivedSize = 0;
-
-    function handleData(data) {
-        if(data.type === 'header') {
-            incomingFiles = [];
-            receivedSize = 0;
-            incomingMeta = data;
+            conn.on('data', (data) => handleData(data));
             
-            isTransferring = true;
-            document.getElementById('progress-container').style.display = 'block';
-            document.getElementById('file-label').innerText = "Receiving: " + data.name;
-            log(`Receiving ${data.name}...`);
-        
-        } else if(data.type === 'chunk') {
-            incomingFiles.push(data.data);
-            receivedSize += data.data.byteLength;
-            updateUI(receivedSize, incomingMeta.size, "Receiving...");
-        
-        } else if(data.type === 'end') {
-            // File is done
-            log("Download complete. Saving...");
-            saveFile();
-            finishTransfer(false);
+            conn.on('close', () => {
+                showToast("Disconnected");
+                resetUI();
+            });
+
+            conn.on('error', () => {
+                showToast("Connection Failed");
+                resetUI();
+            });
         }
-    }
 
-    function saveFile() {
-        const blob = new Blob(incomingFiles, { type: incomingMeta.mime });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = incomingMeta.name;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }
+        function disconnect() {
+            if (conn) conn.close();
+            resetUI();
+        }
 
-    // --- 5. UTILS & RESET ---
-    function updateUI(curr, total, msg) {
-        const pct = Math.floor((curr/total)*100);
-        document.getElementById('progress-fill').style.width = pct + "%";
-        document.getElementById('transfer-pct').innerText = pct + "%";
-        document.getElementById('transfer-msg').innerText = msg;
-    }
+        function resetUI() {
+            ui.panelConnect.classList.remove('hidden');
+            ui.panelTransfer.style.display = 'none';
+            ui.connectBtn.disabled = false;
+            ui.connectBtn.innerText = "Connect Now";
+            ui.statusText.innerText = "Online";
+            ui.progressWrapper.classList.add('hidden');
+            ui.fileLabel.innerText = "Tap to send files";
+        }
 
-    function finishTransfer(isSender) {
-        isTransferring = false;
-        
-        // Reset UI after short delay
-        setTimeout(() => {
-            document.getElementById('progress-container').style.display = 'none';
-            document.getElementById('progress-fill').style.width = "0%";
-            document.getElementById('file-label').innerText = "Tap to Send Another File";
+        // --- 4. HISTORY (LOCAL STORAGE) ---
+        function saveToHistory(id) {
+            let history = JSON.parse(localStorage.getItem('infinity_history') || '[]');
+            // Remove if exists (to move to top)
+            history = history.filter(item => item !== id);
+            // Add to front
+            history.unshift(id);
+            // Keep max 5
+            if(history.length > 5) history.pop();
             
-            // Clear input so same file can be selected again
-            document.getElementById('file-input').value = "";
-            
-            if(isSender) log("Sent successfully.");
-            else log("Saved successfully.");
-        }, 1500);
-    }
+            localStorage.setItem('infinity_history', JSON.stringify(history));
+        }
 
-    function copyId() {
-        const el = document.getElementById('my-id');
-        el.select();
-        document.execCommand('copy');
-    }
-</script>
+        function loadHistory() {
+            const history = JSON.parse(localStorage.getItem('infinity_history') || '[]');
+            if (history.length === 0) return;
+
+            ui.historyList.innerHTML = ''; // Clear default msg
+            history.forEach(id => {
+                const item = document.createElement('div');
+                item.className = 'history-item';
+                item.innerText = id;
+                item.onclick = () => connectToPeer(id);
+                ui.historyList.appendChild(item);
+            });
+        }
+
+        // --- 5. FILE TRANSFER LOGIC ---
+        const CHUNK_SIZE = 16 * 1024;
+        let incomingFiles = [];
+        let incomingMeta = null;
+        let receivedSize = 0;
+
+        ui.fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) startSending(file);
+        });
+
+        function startSending(file) {
+            if (!conn || !conn.open) return showToast("Connection lost");
+
+            ui.progressWrapper.classList.remove('hidden');
+            ui.fileLabel.innerText = "Sending " + file.name;
+            ui.transferStatus.innerText = "Sending...";
+
+            conn.send({ type: 'header', name: file.name, size: file.size, mime: file.type });
+
+            const reader = new FileReader();
+            let offset = 0;
+
+            reader.onload = (e) => {
+                conn.send({ type: 'chunk', data: e.target.result });
+                offset += e.target.result.byteLength;
+                updateProgress(offset, file.size);
+
+                if (offset < file.size) {
+                    // No delay needed for reliable TCP, but nice for UI smoothness
+                    requestAnimationFrame(() => {
+                        const slice = file.slice(offset, offset + CHUNK_SIZE);
+                        reader.readAsArrayBuffer(slice);
+                    });
+                } else {
+                    conn.send({ type: 'end' });
+                    ui.transferStatus.innerText = "Sent!";
+                    resetFileUI();
+                }
+            };
+            
+            const slice = file.slice(0, CHUNK_SIZE);
+            reader.readAsArrayBuffer(slice);
+        }
+
+        function handleData(data) {
+            if (data.type === 'header') {
+                incomingFiles = [];
+                incomingMeta = data;
+                receivedSize = 0;
+                ui.progressWrapper.classList.remove('hidden');
+                ui.fileLabel.innerText = "Receiving " + data.name;
+                ui.transferStatus.innerText = "Receiving...";
+            } 
+            else if (data.type === 'chunk') {
+                incomingFiles.push(data.data);
+                receivedSize += data.data.byteLength;
+                updateProgress(receivedSize, incomingMeta.size);
+            }
+            else if (data.type === 'end') {
+                downloadFile();
+                resetFileUI();
+            }
+        }
+
+        function downloadFile() {
+            const blob = new Blob(incomingFiles, { type: incomingMeta.mime });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = incomingMeta.name;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast("File Saved!");
+        }
+
+        function updateProgress(curr, total) {
+            const pct = Math.floor((curr / total) * 100);
+            ui.progressFill.style.width = pct + "%";
+            ui.transferPct.innerText = pct + "%";
+        }
+
+        function resetFileUI() {
+            setTimeout(() => {
+                ui.progressWrapper.classList.add('hidden');
+                ui.progressFill.style.width = '0%';
+                ui.fileInput.value = ""; // Allow re-selecting same file
+                ui.fileLabel.innerText = "Tap to send files";
+            }, 2000);
+        }
+
+        // --- 6. HELPERS ---
+        function copyId() {
+            ui.myId.select();
+            document.execCommand('copy');
+            showToast("ID Copied!");
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.add('visible');
+            setTimeout(() => t.classList.remove('visible'), 3000);
+        }
+
+    </script>
 </body>
 </html>
