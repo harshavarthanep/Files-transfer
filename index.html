@@ -3,284 +3,340 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InfinityDrop v3 | Ultra-Robust</title>
+    <title>InfinityDrop v4 | Multi-File Ready</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         :root {
-            --bg: #0d1117;
-            --card: #161b22;
-            --border: #30363d;
-            --text: #c9d1d9;
-            --accent: #58a6ff;
-            --success: #238636;
-            --error: #da3633;
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --primary: #3b82f6;
+            --text: #f1f5f9;
+            --success: #22c55e;
+            --border: #334155;
         }
-        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+
         body {
-            background: var(--bg); color: var(--text);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            min-height: 100vh; margin: 0; padding: 1rem;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
         }
 
-        .container {
-            width: 100%; max-width: 500px;
-            background: var(--card); border: 1px solid var(--border);
-            border-radius: 12px; padding: 1.5rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        .app {
+            width: 100%;
+            max-width: 480px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
-        h1 { color: var(--accent); margin: 0 0 0.5rem 0; text-align: center; }
-        .subtitle { text-align: center; color: #8b949e; font-size: 0.9rem; margin-bottom: 1.5rem; }
+        h1 { font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--primary); text-align: center; }
+        .status { text-align: center; font-size: 0.85rem; color: #94a3b8; margin-bottom: 1.5rem; }
 
-        .box { background: #0d1117; border: 1px solid var(--border); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
-        
-        label { display: block; font-size: 0.8rem; color: #8b949e; margin-bottom: 0.5rem; text-transform: uppercase; }
-        
-        .row { display: flex; gap: 0.5rem; }
-        input {
-            width: 100%; background: #010409; border: 1px solid var(--border);
-            color: var(--text); padding: 10px; border-radius: 6px; font-family: monospace;
+        .section { margin-bottom: 1.5rem; }
+        label { display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 0.5rem; }
+
+        input[type="text"] {
+            width: 100%;
+            background: #0f172a;
+            border: 1px solid var(--border);
+            color: white;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            font-family: monospace;
         }
-        
+
         button {
-            background: #21262d; color: var(--accent); border: 1px solid var(--border);
-            padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
         }
-        button.primary { background: var(--accent); color: #000; border: none; width: 100%; }
         button:hover { opacity: 0.9; }
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        button:disabled { background: #475569; cursor: not-allowed; }
+
+        .file-area {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            position: relative;
+        }
+        .file-area:hover { border-color: var(--primary); background: rgba(59, 130, 246, 0.1); }
+        .file-area input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+        .progress-container { margin-top: 1rem; display: none; }
+        .progress-bar { height: 6px; background: #334155; border-radius: 3px; overflow: hidden; margin-top: 0.5rem; }
+        .progress-fill { height: 100%; width: 0%; background: var(--success); transition: width 0.1s; }
+        .progress-text { display: flex; justify-content: space-between; font-size: 0.75rem; color: #cbd5e1; }
 
         .log-box {
-            font-family: monospace; font-size: 0.75rem; color: #8b949e;
-            height: 100px; overflow-y: auto; background: #010409;
-            padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border);
             margin-top: 1rem;
+            padding: 0.75rem;
+            background: #020617;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.7rem;
+            color: #94a3b8;
+            height: 100px;
+            overflow-y: auto;
         }
-
-        .progress-bar {
-            height: 8px; background: #30363d; border-radius: 4px; overflow: hidden; margin-top: 1rem; display: none;
-        }
-        .progress-fill { height: 100%; width: 0%; background: var(--success); transition: width 0.2s; }
 
         .hidden { display: none; }
-        .success-text { color: var(--success); font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>InfinityDrop v3</h1>
-    <div class="subtitle">UDP Mode • Multi-STUN • Auto-Retry</div>
+<div class="app">
+    <h1>InfinityDrop v4</h1>
+    <div class="status" id="status-text">Initializing...</div>
 
-    <div id="setup-panel">
-        <div class="box">
-            <label>1. Your ID</label>
-            <div class="row">
-                <input type="text" id="my-id" readonly value="Generating..." onclick="this.select()">
-                <button onclick="copyId()">Copy</button>
+    <div id="panel-connect" class="section">
+        <label>Your ID</label>
+        <div style="display: flex; gap: 8px; margin-bottom: 1rem;">
+            <input type="text" id="my-id" readonly onclick="this.select()">
+            <button style="width: auto;" onclick="copyId()">Copy</button>
+        </div>
+
+        <label>Partner ID</label>
+        <input type="text" id="partner-id" placeholder="Paste ID here">
+        <button onclick="connectToPeer()" id="btn-connect">Connect</button>
+    </div>
+
+    <div id="panel-transfer" class="section hidden">
+        <div class="file-area">
+            <input type="file" id="file-input">
+            <div style="font-size: 2rem;">📂</div>
+            <div id="file-label">Tap to Send File</div>
+        </div>
+
+        <div class="progress-container" id="progress-container">
+            <div class="progress-text">
+                <span id="transfer-msg">Waiting...</span>
+                <span id="transfer-pct">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
             </div>
         </div>
-
-        <div class="box">
-            <label>2. Partner ID</label>
-            <input type="text" id="partner-id" placeholder="Paste ID here...">
-            <button id="btn-connect" class="primary" style="margin-top: 10px;" onclick="connect()">Connect to Partner</button>
-        </div>
     </div>
 
-    <div id="transfer-panel" class="hidden">
-        <div class="box" style="text-align: center; border-color: var(--accent);">
-            <h3 class="success-text">Connected!</h3>
-            <p style="font-size: 0.9rem; margin-bottom: 1rem;">Select a file to send instantly.</p>
-            <input type="file" id="file-input">
-        </div>
-
-        <div class="progress-bar" id="progress-bar">
-            <div class="progress-fill" id="progress-fill"></div>
-        </div>
-        <div id="status-text" style="text-align: center; margin-top: 0.5rem; font-size: 0.8rem;"></div>
-        
-        <button onclick="location.reload()" style="width: 100%; margin-top: 1rem;">Disconnect / New File</button>
-    </div>
-
-    <div class="log-box" id="log"></div>
+    <div class="log-box" id="logs"></div>
 </div>
 
 <script>
-    // --- ROBUST CONFIGURATION ---
-    // We use a large list of free STUN servers to maximize chance of connection
+    // --- 1. CONFIGURATION ---
     const iceServers = [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
-        { urls: 'stun:stun2.l.google.com:19302' },
-        { urls: 'stun:stun3.l.google.com:19302' },
-        { urls: 'stun:stun4.l.google.com:19302' },
-        { urls: 'stun:stun.services.mozilla.com' }
     ];
 
     const peer = new Peer({
         debug: 1,
         secure: true,
-        config: { iceServers: iceServers, sdpSemantics: 'unified-plan' }
+        config: { iceServers: iceServers }
     });
 
     let conn = null;
+    let isTransferring = false;
 
-    // --- LOGGING UTILS ---
+    // Logging Utility
     function log(msg) {
-        const d = new Date().toLocaleTimeString();
-        const el = document.getElementById('log');
-        el.innerHTML += `<div>[${d}] ${msg}</div>`;
-        el.scrollTop = el.scrollHeight;
+        const box = document.getElementById('logs');
+        const time = new Date().toLocaleTimeString().split(' ')[0];
+        box.innerHTML += `<div>[${time}] ${msg}</div>`;
+        box.scrollTop = box.scrollHeight;
     }
 
-    // --- 1. INITIALIZATION ---
+    // --- 2. CONNECTION ---
     peer.on('open', (id) => {
         document.getElementById('my-id').value = id;
-        log(`ID Assigned: ${id}`);
-        log("Ready to connect.");
+        document.getElementById('status-text').innerText = "Online - Ready to Connect";
+        log("ID Generated.");
+    });
+
+    peer.on('connection', (c) => {
+        conn = c;
+        setupConnection();
+        log("Incoming connection...");
     });
 
     peer.on('error', (err) => {
-        log(`ERROR: ${err.type}`);
-        if(err.type === 'peer-unavailable') log("Partner ID not found. Check spelling.");
+        log("Error: " + err.type);
         document.getElementById('btn-connect').disabled = false;
         document.getElementById('btn-connect').innerText = "Connect";
     });
 
-    peer.on('connection', (c) => {
-        log("Incoming connection...");
-        handleConnection(c);
-    });
-
-    // --- 2. CONNECT LOGIC ---
-    function connect() {
-        const destId = document.getElementById('partner-id').value.trim();
-        if(!destId) return alert("Enter Partner ID");
-        if(destId === document.getElementById('my-id').value) return alert("Cannot connect to self!");
-
+    function connectToPeer() {
+        const dest = document.getElementById('partner-id').value.trim();
+        if(!dest) return alert("Enter an ID");
+        
         document.getElementById('btn-connect').disabled = true;
         document.getElementById('btn-connect').innerText = "Connecting...";
-        log(`Attempting to connect to ${destId}...`);
-
-        // KEY FIX: Removed 'reliable: true' (it causes timeouts). 
-        // We use standard UDP which is faster and more likely to punch through firewalls.
-        conn = peer.connect(destId, {
-            reliable: false,
-            serialization: 'json'
-        });
-
-        handleConnection(conn);
+        
+        conn = peer.connect(dest, { reliable: true }); // Reliable: true ensures TCP-like delivery
+        setupConnection();
     }
 
-    function handleConnection(c) {
-        conn = c;
-
+    function setupConnection() {
         conn.on('open', () => {
-            log("Connection ESTABLISHED!");
-            document.getElementById('setup-panel').classList.add('hidden');
-            document.getElementById('transfer-panel').classList.remove('hidden');
+            document.getElementById('panel-connect').classList.add('hidden');
+            document.getElementById('panel-transfer').classList.remove('hidden');
+            document.getElementById('status-text').innerText = "Connected Securely";
+            log("Connected to partner.");
         });
 
         conn.on('data', (data) => handleData(data));
         
         conn.on('close', () => {
-            log("Connection Closed.");
             alert("Connection Lost");
             location.reload();
         });
-
-        conn.on('error', (err) => log(`Conn Error: ${err}`));
     }
 
-    // --- 3. FILE TRANSFER (CHUNKED) ---
-    const CHUNK_SIZE = 1024 * 10; // 10KB chunks (Safe for UDP)
-    let incomingBuffer = [];
-    let incomingSize = 0;
-    let incomingMeta = null;
+    // --- 3. SEND LOGIC ---
+    const CHUNK_SIZE = 16 * 1024; // 16KB
 
     document.getElementById('file-input').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if(!file) return;
+        if(isTransferring) return alert("Wait for current transfer to finish");
+        
         sendFile(file);
     });
 
-    async function sendFile(file) {
-        log(`Sending ${file.name} (${file.size} bytes)...`);
-        document.getElementById('progress-bar').style.display = 'block';
+    function sendFile(file) {
+        isTransferring = true;
+        document.getElementById('progress-container').style.display = 'block';
+        document.getElementById('file-label').innerText = "Sending: " + file.name;
         
-        // Send Metadata
-        conn.send({ type: 'meta', name: file.name, size: file.size, mime: file.type });
+        // 1. Send Header
+        conn.send({
+            type: 'header',
+            name: file.name,
+            size: file.size,
+            mime: file.type
+        });
 
-        // Send Data
+        log(`Starting send: ${file.name}`);
+
         const reader = new FileReader();
         let offset = 0;
 
         reader.onload = (e) => {
-            conn.send({ type: 'chunk', data: e.target.result });
+            // 2. Send Chunk
+            conn.send({
+                type: 'chunk',
+                data: e.target.result
+            });
+
             offset += e.target.result.byteLength;
-            updateProgress(offset, file.size);
+            updateUI(offset, file.size, "Sending...");
 
             if(offset < file.size) {
-                // Determine next chunk
-                const nextSlice = file.slice(offset, offset + CHUNK_SIZE);
-                // Tiny delay to prevent network congestion (UDP flood)
-                setTimeout(() => reader.readAsArrayBuffer(nextSlice), 10); 
+                readNextChunk();
             } else {
-                log("File sent completely!");
-                document.getElementById('status-text').innerText = "Sent Successfully!";
+                // 3. Send Finish Flag (Crucial for closing the file on receiver side)
+                conn.send({ type: 'end' });
+                log("File sent. Resetting...");
+                finishTransfer(true);
             }
         };
 
-        reader.readAsArrayBuffer(file.slice(0, CHUNK_SIZE));
+        const readNextChunk = () => {
+            const slice = file.slice(offset, offset + CHUNK_SIZE);
+            reader.readAsArrayBuffer(slice);
+        };
+
+        readNextChunk();
     }
 
-    function handleData(data) {
-        if(data.type === 'meta') {
-            incomingMeta = data;
-            incomingBuffer = [];
-            incomingSize = 0;
-            log(`Receiving ${data.name}...`);
-            document.getElementById('progress-bar').style.display = 'block';
-        } else if(data.type === 'chunk') {
-            incomingBuffer.push(data.data);
-            incomingSize += data.data.byteLength;
-            updateProgress(incomingSize, incomingMeta.size);
+    // --- 4. RECEIVE LOGIC ---
+    let incomingFiles = []; // Buffer
+    let incomingMeta = null;
+    let receivedSize = 0;
 
-            if(incomingSize >= incomingMeta.size) {
-                log("File received! Downloading...");
-                downloadFile();
-            }
+    function handleData(data) {
+        if(data.type === 'header') {
+            incomingFiles = [];
+            receivedSize = 0;
+            incomingMeta = data;
+            
+            isTransferring = true;
+            document.getElementById('progress-container').style.display = 'block';
+            document.getElementById('file-label').innerText = "Receiving: " + data.name;
+            log(`Receiving ${data.name}...`);
+        
+        } else if(data.type === 'chunk') {
+            incomingFiles.push(data.data);
+            receivedSize += data.data.byteLength;
+            updateUI(receivedSize, incomingMeta.size, "Receiving...");
+        
+        } else if(data.type === 'end') {
+            // File is done
+            log("Download complete. Saving...");
+            saveFile();
+            finishTransfer(false);
         }
     }
 
-    function downloadFile() {
-        const blob = new Blob(incomingBuffer, { type: incomingMeta.mime });
+    function saveFile() {
+        const blob = new Blob(incomingFiles, { type: incomingMeta.mime });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
         a.download = incomingMeta.name;
         document.body.appendChild(a);
         a.click();
-        log("Download started.");
-        document.getElementById('status-text').innerText = "File Saved!";
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     }
 
-    function updateProgress(curr, total) {
+    // --- 5. UTILS & RESET ---
+    function updateUI(curr, total, msg) {
         const pct = Math.floor((curr/total)*100);
         document.getElementById('progress-fill').style.width = pct + "%";
-        document.getElementById('status-text').innerText = `${pct}%`;
+        document.getElementById('transfer-pct').innerText = pct + "%";
+        document.getElementById('transfer-msg').innerText = msg;
+    }
+
+    function finishTransfer(isSender) {
+        isTransferring = false;
+        
+        // Reset UI after short delay
+        setTimeout(() => {
+            document.getElementById('progress-container').style.display = 'none';
+            document.getElementById('progress-fill').style.width = "0%";
+            document.getElementById('file-label').innerText = "Tap to Send Another File";
+            
+            // Clear input so same file can be selected again
+            document.getElementById('file-input').value = "";
+            
+            if(isSender) log("Sent successfully.");
+            else log("Saved successfully.");
+        }, 1500);
     }
 
     function copyId() {
         const el = document.getElementById('my-id');
         el.select();
         document.execCommand('copy');
-        log("ID copied.");
     }
-
-    log("Initializing PeerJS...");
 </script>
 </body>
 </html>
