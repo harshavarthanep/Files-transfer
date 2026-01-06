@@ -3,17 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InfinityDrop | Zen</title>
+    <title>InfinityDrop | Zen V7</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg: #050505;
             --surface: #111;
+            --surface-hover: #1a1a1a;
             --border: #333;
             --primary: #fff;
             --accent: #3b82f6;
-            --text-sec: #888;
+            --success: #22c55e;
+            --text-sec: #666;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
@@ -29,176 +31,184 @@
             padding: 20px;
         }
 
-        /* --- Minimalist Container --- */
         .app-container {
             width: 100%;
-            max-width: 420px;
+            max-width: 440px;
             display: flex;
             flex-direction: column;
-            gap: 24px;
+            gap: 20px;
         }
 
+        /* --- Header --- */
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding-bottom: 15px;
             border-bottom: 1px solid var(--border);
-            padding-bottom: 20px;
         }
 
-        h1 { font-size: 1.2rem; font-weight: 600; letter-spacing: -0.02em; }
-        .status-dot { height: 8px; width: 8px; background: #333; border-radius: 50%; display: inline-block; }
-        .status-dot.online { background: #22c55e; box-shadow: 0 0 10px rgba(34, 197, 94, 0.4); }
+        h1 { font-size: 1.1rem; font-weight: 600; letter-spacing: -0.01em; }
+        .status-badge { 
+            font-size: 0.75rem; color: var(--text-sec); 
+            display: flex; align-items: center; gap: 6px; 
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .status-dot { width: 8px; height: 8px; background: #333; border-radius: 50%; }
+        .status-dot.online { background: var(--success); box-shadow: 0 0 8px rgba(34, 197, 94, 0.3); }
 
-        /* --- Input Fields --- */
-        .field-group { position: relative; }
-        label { font-size: 0.75rem; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 8px; }
+        /* --- Connect Panel --- */
+        .panel { display: flex; flex-direction: column; gap: 16px; }
+        .label { font-size: 0.7rem; color: var(--text-sec); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.05em; }
         
         .input-row {
-            display: flex;
-            gap: 10px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 4px;
-            transition: border-color 0.2s;
+            display: flex; background: var(--surface);
+            border: 1px solid var(--border); border-radius: 8px;
+            padding: 4px; transition: 0.2s;
         }
         .input-row:focus-within { border-color: var(--primary); }
 
         input[type="text"] {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: white;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.9rem;
-            padding: 10px;
-            outline: none;
+            flex: 1; background: transparent; border: none; color: white;
+            font-family: 'JetBrains Mono', monospace; padding: 12px; outline: none; font-size: 0.9rem;
         }
 
-        button.icon-btn {
+        .btn-icon {
             background: transparent; border: none; color: var(--text-sec);
-            cursor: pointer; padding: 0 10px; font-size: 1.1rem;
-            transition: color 0.2s;
+            cursor: pointer; padding: 0 12px; font-size: 0.9rem; transition: 0.2s;
         }
-        button.icon-btn:hover { color: white; }
+        .btn-icon:hover { color: white; }
 
         .btn-main {
-            width: 100%;
-            background: white; color: black;
-            border: none; padding: 14px;
-            border-radius: 8px; font-weight: 600;
-            cursor: pointer; margin-top: 10px;
-            transition: opacity 0.2s;
+            width: 100%; padding: 14px; background: white; color: black;
+            border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+            transition: opacity 0.2s; font-size: 0.95rem;
         }
         .btn-main:hover { opacity: 0.9; }
-        .btn-main:disabled { background: #333; color: #666; cursor: not-allowed; }
+        .btn-main:disabled { background: #333; color: #777; cursor: not-allowed; }
 
-        /* --- History (Recent Peers) --- */
-        .history-chips {
-            display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;
-        }
+        /* --- History --- */
+        .history-header { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+        .history-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
         .chip {
             background: var(--surface); border: 1px solid var(--border);
-            color: var(--text-sec); padding: 4px 10px; border-radius: 20px;
+            color: #888; padding: 6px 12px; border-radius: 20px;
             font-size: 0.75rem; cursor: pointer; transition: 0.2s;
             font-family: 'JetBrains Mono', monospace;
         }
-        .chip:hover { border-color: var(--primary); color: var(--primary); }
+        .chip:hover { border-color: #666; color: white; }
 
-        /* --- Transfer Zone --- */
+        /* --- Transfer Panel --- */
         .drop-zone {
             border: 1px dashed var(--border);
             background: rgba(255,255,255,0.02);
-            border-radius: 12px;
-            padding: 40px 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.2s;
+            border-radius: 12px; padding: 40px 20px;
+            text-align: center; cursor: pointer; transition: 0.2s;
             position: relative;
         }
-        .drop-zone:hover { border-color: var(--primary); background: rgba(255,255,255,0.05); }
+        .drop-zone:hover { border-color: #666; background: rgba(255,255,255,0.05); }
         .drop-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 
-        /* --- File Queue List --- */
-        .file-list {
-            margin-top: 20px;
-            display: flex; flex-direction: column; gap: 8px;
-        }
+        /* --- File List --- */
+        .file-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
         .file-item {
-            display: flex; align-items: center; justify-content: space-between;
-            background: var(--surface); padding: 12px; border-radius: 6px;
-            font-size: 0.85rem; border: 1px solid var(--border);
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 8px;
+            transition: 0.2s;
         }
-        .file-info { display: flex; flex-direction: column; gap: 4px; overflow: hidden; }
-        .file-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
-        .progress-bar-bg { width: 100px; height: 4px; background: #222; border-radius: 2px; overflow: hidden; }
-        .progress-bar-fill { height: 100%; width: 0%; background: white; transition: width 0.1s; }
+        .file-item:hover { border-color: #444; }
         
-        .status-text { font-size: 0.7rem; color: var(--text-sec); }
+        .file-head { display: flex; justify-content: space-between; align-items: center; }
+        .file-name { font-size: 0.85rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; max-width: 200px; }
+        .file-meta { font-size: 0.75rem; color: var(--text-sec); display: flex; gap: 10px; }
+        
+        .progress-bar { height: 4px; background: #222; border-radius: 2px; overflow: hidden; width: 100%; }
+        .progress-fill { height: 100%; width: 0%; background: white; transition: width 0.1s; }
+
+        .btn-action {
+            background: #222; border: 1px solid #333; color: white;
+            padding: 6px 12px; border-radius: 4px; font-size: 0.75rem;
+            cursor: pointer; margin-top: 4px; display: none;
+        }
+        .btn-action:hover { background: #333; }
+        .btn-action.primary { background: white; color: black; border: none; }
+        .btn-action.primary:hover { opacity: 0.9; }
+
+        /* --- Terminal Log --- */
+        .log-box {
+            background: #080808;
+            border-top: 1px solid var(--border);
+            padding: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: #555;
+            height: 120px;
+            overflow-y: auto;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .log-entry { margin-bottom: 4px; }
+        .log-entry.info { color: #888; }
+        .log-entry.success { color: var(--success); }
+        .log-entry.error { color: #ef4444; }
 
         .hidden { display: none !important; }
-        
-        /* Toast */
-        .toast {
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            background: #222; border: 1px solid #444; color: white;
-            padding: 8px 16px; border-radius: 30px; font-size: 0.8rem;
-            opacity: 0; pointer-events: none; transition: 0.2s;
-            z-index: 99;
-        }
-        .toast.show { opacity: 1; transform: translateX(-50%) translateY(-5px); }
     </style>
 </head>
 <body>
 
 <div class="app-container">
     <header>
-        <div style="display: flex; align-items: center; gap: 10px;">
+        <h1>InfinityDrop</h1>
+        <div class="status-badge">
             <div id="status-dot" class="status-dot"></div>
-            <h1>InfinityDrop</h1>
+            <span id="status-text">Init...</span>
         </div>
-        <div style="font-size: 0.75rem; color: var(--text-sec);" id="connection-status">Initializing...</div>
     </header>
 
-    <div id="panel-connect">
-        <div class="field-group">
-            <label>Your ID</label>
+    <div id="panel-connect" class="panel">
+        <div>
+            <div class="label">Your Identity</div>
             <div class="input-row">
                 <input type="text" id="my-id" readonly value="...">
-                <button class="icon-btn" onclick="copyId()">Copy</button>
+                <button class="btn-icon" onclick="copyId()" title="Copy">📋</button>
             </div>
         </div>
 
-        <div class="field-group" style="margin-top: 20px;">
-            <label>Partner ID</label>
+        <div>
+            <div class="label">Connect to Peer</div>
             <div class="input-row">
-                <input type="text" id="partner-id" placeholder="Ex: K9-X2">
+                <input type="text" id="partner-id" placeholder="Enter ID (e.g. K9-X2)">
             </div>
-            
-            <div class="history-chips" id="recent-peers"></div>
+
+            <div class="history-header">
+                <div class="label">Recent</div>
+                <button class="btn-icon" onclick="clearHistory()" style="font-size: 0.7rem; padding: 0;">Clear</button>
+            </div>
+            <div id="recent-list" class="history-chips"></div>
         </div>
 
-        <button class="btn-main" id="btn-connect" onclick="connect()">Connect Peer</button>
+        <button id="btn-connect" class="btn-main" onclick="connect()">Connect</button>
     </div>
 
-    <div id="panel-transfer" class="hidden">
+    <div id="panel-transfer" class="panel hidden">
         <div class="drop-zone">
             <input type="file" id="file-input" multiple>
-            <div style="font-size: 1.5rem; margin-bottom: 10px; opacity: 0.8;">Add Files +</div>
-            <div style="font-size: 0.8rem; color: var(--text-sec);">Select multiple files or drag & drop</div>
+            <div style="font-size: 1.2rem; margin-bottom: 6px;">+ Add Files</div>
+            <div style="font-size: 0.75rem; color: var(--text-sec);">Drag & drop supported</div>
         </div>
 
-        <div class="file-list" id="file-queue">
-            </div>
+        <div id="file-queue" class="file-list"></div>
 
-        <button class="btn-main" onclick="disconnect()" style="background: transparent; border: 1px solid var(--border); color: var(--text-sec);">
+        <button class="btn-main" onclick="disconnect()" style="background: transparent; border: 1px solid var(--border); color: #888;">
             Disconnect
         </button>
     </div>
-</div>
 
-<div id="toast" class="toast">Message</div>
+    <div id="logs" class="log-box">
+        <div class="log-entry info">> System Initialized</div>
+    </div>
+</div>
 
 <script>
     // --- 0. UTILS ---
@@ -211,43 +221,45 @@
         return id;
     };
 
-    const formatSize = (bytes) => {
-        if(bytes === 0) return '0 B';
-        const k = 1024, sizes = ['B', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    const formatSize = (b) => {
+        if(b===0) return '0 B';
+        const k=1024, i=Math.floor(Math.log(b)/Math.log(k));
+        return parseFloat((b/Math.pow(k,i)).toFixed(1))+' '+['B','KB','MB','GB'][i];
     };
 
-    // --- 1. CONFIG & STATE ---
-    // Increased chunk size to 64KB for speed (PeerJS default is usually low)
-    const CHUNK_SIZE = 64 * 1024; 
+    const log = (msg, type='info') => {
+        const box = document.getElementById('logs');
+        const time = new Date().toLocaleTimeString().split(' ')[0];
+        box.innerHTML += `<div class="log-entry ${type}">> [${time}] ${msg}</div>`;
+        box.scrollTop = box.scrollHeight;
+    };
+
+    // --- 1. CORE STATE ---
+    const CHUNK_SIZE = 64 * 1024;
     let myPeerId = generateId();
-    
+    let conn = null;
+    let transferQueue = [];
+    let isSending = false;
+    let fileRegistry = {}; // Stores Blobs/URLs
+
+    // --- 2. PEERJS SETUP ---
     const peer = new Peer(myPeerId, {
-        debug: 1,
-        secure: true, // HTTPS support
-        config: {
-            iceServers: [
-                { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' }
-            ]
-        }
+        debug: 0,
+        secure: true,
+        config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] }
     });
 
-    let conn = null;
-    let transferQueue = []; // Array of files to send
-    let isSending = false;
-
-    // --- 2. PEER EVENTS ---
     peer.on('open', (id) => {
         myPeerId = id;
         document.getElementById('my-id').value = id;
-        updateStatus("online", "Online");
+        updateStatus('online', 'Ready');
+        log(`ID Assigned: ${id}`, 'success');
         renderHistory();
     });
 
     peer.on('connection', (c) => {
         conn = c;
+        log(`Incoming connection from ${c.peer}...`);
         setupConn();
     });
 
@@ -256,51 +268,68 @@
             myPeerId = generateId();
             peer.reconnect();
         } else {
-            notify(err.type);
+            log(`Error: ${err.type}`, 'error');
+            resetUI();
         }
     });
 
     // --- 3. CONNECTION LOGIC ---
     function connect(id = null) {
-        const destId = id || document.getElementById('partner-id').value.trim().toUpperCase();
-        if(!destId) return notify("Enter ID");
-        if(destId === myPeerId) return notify("Cannot connect to self");
+        const dest = id || document.getElementById('partner-id').value.trim().toUpperCase();
+        if(!dest) return log("Please enter a Partner ID", 'error');
+        if(dest === myPeerId) return log("Cannot connect to self", 'error');
 
+        document.getElementById('btn-connect').disabled = true;
         document.getElementById('btn-connect').innerText = "Connecting...";
-        
-        conn = peer.connect(destId, { reliable: true });
+        log(`Connecting to ${dest}...`);
+
+        conn = peer.connect(dest, { reliable: true });
         setupConn();
     }
 
     function setupConn() {
         conn.on('open', () => {
+            log(`Connection established with ${conn.peer}`, 'success');
+            updateStatus('online', 'Connected');
+            
             document.getElementById('panel-connect').classList.add('hidden');
             document.getElementById('panel-transfer').classList.remove('hidden');
-            updateStatus("online", "Connected");
+            
             saveHistory(conn.peer);
-            notify("Connected!");
         });
 
         conn.on('data', handleData);
         
         conn.on('close', () => {
-            notify("Disconnected");
-            location.reload();
+            log("Connection closed", 'error');
+            disconnect();
         });
     }
 
     function disconnect() {
         if(conn) conn.close();
-        location.reload();
+        conn = null;
+        log("Resetting session...");
+        
+        // Reset UI without reload
+        document.getElementById('panel-transfer').classList.add('hidden');
+        document.getElementById('panel-connect').classList.remove('hidden');
+        document.getElementById('btn-connect').disabled = false;
+        document.getElementById('btn-connect').innerText = "Connect";
+        document.getElementById('file-queue').innerHTML = ""; // Clear file list
+        updateStatus('online', 'Ready');
+        
+        // Clean memory
+        fileRegistry = {};
     }
 
-    // --- 4. FILE QUEUE LOGIC (SENDER) ---
+    // --- 4. SENDER LOGIC ---
     document.getElementById('file-input').addEventListener('change', (e) => {
-        const files = Array.from(e.target.files);
-        files.forEach(file => {
-            const fileId = Date.now() + Math.random();
-            transferQueue.push({ file, id: fileId, status: 'queued' });
-            addFileToUI(fileId, file.name, file.size, 'sender');
+        Array.from(e.target.files).forEach(file => {
+            const fid = Math.random().toString(36).substr(2, 9);
+            transferQueue.push({ file, id: fid });
+            createFileUI(fid, file.name, file.size, 'upload');
+            log(`Queued: ${file.name}`);
         });
         processQueue();
     });
@@ -308,158 +337,167 @@
     async function processQueue() {
         if(isSending || transferQueue.length === 0) return;
         
-        const item = transferQueue[0]; // Get first
         isSending = true;
-        updateFileStatus(item.id, "Sending...");
-
+        const item = transferQueue[0];
+        log(`Starting transfer: ${item.file.name}`);
+        
         await sendFile(item);
         
-        // Remove from queue and recurse
-        transferQueue.shift(); 
+        transferQueue.shift();
         isSending = false;
         processQueue();
     }
 
-    async function sendFile(item) {
+    function sendFile(item) {
         return new Promise((resolve) => {
             const { file, id } = item;
             
-            // 1. Send Header
-            conn.send({ type: 'header', id, name: file.name, size: file.size, mime: file.type });
+            conn.send({ type: 'head', id, name: file.name, size: file.size, mime: file.type });
 
             const reader = new FileReader();
             let offset = 0;
 
             reader.onload = (e) => {
-                // 2. Send Chunk
                 conn.send({ type: 'chunk', id, data: e.target.result });
                 offset += e.target.result.byteLength;
                 
-                // Update UI
-                const pct = (offset / file.size) * 100;
-                updateFileProgress(id, pct);
+                updateProgress(id, offset, file.size);
 
                 if(offset < file.size) {
-                    // Loop directly (Microtask) for max speed
-                    const slice = file.slice(offset, offset + CHUNK_SIZE);
-                    reader.readAsArrayBuffer(slice);
+                    reader.readAsArrayBuffer(file.slice(offset, offset + CHUNK_SIZE));
                 } else {
-                    // 3. End
                     conn.send({ type: 'end', id });
-                    updateFileStatus(id, "Sent");
+                    log(`Sent: ${file.name}`, 'success');
+                    markComplete(id, 'Sent');
                     resolve();
                 }
             };
-
-            // Start reading
-            const slice = file.slice(0, CHUNK_SIZE);
-            reader.readAsArrayBuffer(slice);
+            reader.readAsArrayBuffer(file.slice(0, CHUNK_SIZE));
         });
     }
 
     // --- 5. RECEIVER LOGIC ---
-    let incomingFiles = {}; // Map of id -> { buffer, meta, received }
-
     function handleData(data) {
-        if(data.type === 'header') {
-            incomingFiles[data.id] = {
-                meta: data,
-                buffer: [],
-                received: 0
-            };
-            addFileToUI(data.id, data.name, data.size, 'receiver');
-            updateFileStatus(data.id, "Receiving...");
+        if(data.type === 'head') {
+            log(`Receiving: ${data.name}`);
+            fileRegistry[data.id] = { meta: data, buffer: [], received: 0 };
+            createFileUI(data.id, data.name, data.size, 'download');
         
         } else if(data.type === 'chunk') {
-            const f = incomingFiles[data.id];
+            const f = fileRegistry[data.id];
             if(!f) return;
             f.buffer.push(data.data);
             f.received += data.data.byteLength;
-            
-            const pct = (f.received / f.meta.size) * 100;
-            updateFileProgress(data.id, pct);
+            updateProgress(data.id, f.received, f.meta.size);
         
         } else if(data.type === 'end') {
-            const f = incomingFiles[data.id];
-            if(!f) return;
-            downloadFile(f);
-            updateFileStatus(data.id, "Saved");
-            delete incomingFiles[data.id]; // Cleanup memory
+            const f = fileRegistry[data.id];
+            log(`Received: ${f.meta.name}`, 'success');
+            
+            // Create Blob URL
+            const blob = new Blob(f.buffer, { type: f.meta.mime });
+            f.url = URL.createObjectURL(blob);
+            f.buffer = []; // Free buffer memory
+            
+            enableDownload(data.id, f.url, f.meta.name);
         }
     }
 
-    function downloadFile(f) {
-        const blob = new Blob(f.buffer, { type: f.meta.mime });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = f.meta.name;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-    }
-
-    // --- 6. UI MANAGERS ---
-    function addFileToUI(id, name, size, type) {
-        const icon = type === 'sender' ? '⬆' : '⬇';
+    // --- 6. UI HELPERS ---
+    function createFileUI(id, name, size, type) {
+        const icon = type === 'upload' ? '⬆' : '⬇';
         const html = `
-            <div class="file-item" id="file-${id}">
-                <div class="file-info">
+            <div class="file-item" id="f-${id}">
+                <div class="file-head">
                     <div class="file-name" title="${name}"><strong>${icon}</strong> ${name}</div>
-                    <div class="status-text">${formatSize(size)} • <span class="status-label">Waiting</span></div>
+                    <div class="file-meta">${formatSize(size)}</div>
                 </div>
-                <div class="progress-bar-bg">
-                    <div class="progress-bar-fill" style="width: 0%"></div>
+                <div class="progress-bar"><div class="progress-fill" style="width: 0%"></div></div>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-action primary" id="btn-dl-${id}">Download</button>
+                    <button class="btn-action" onclick="dismissFile('${id}')">Dismiss</button>
                 </div>
-            </div>
-        `;
+            </div>`;
         document.getElementById('file-queue').insertAdjacentHTML('afterbegin', html);
     }
 
-    function updateFileProgress(id, pct) {
-        const el = document.getElementById(`file-${id}`);
-        if(el) el.querySelector('.progress-bar-fill').style.width = pct + "%";
+    function updateProgress(id, curr, total) {
+        const el = document.getElementById(`f-${id}`);
+        if(el) el.querySelector('.progress-fill').style.width = (curr/total*100) + "%";
     }
 
-    function updateFileStatus(id, msg) {
-        const el = document.getElementById(`file-${id}`);
-        if(el) el.querySelector('.status-label').innerText = msg;
+    function markComplete(id, text) {
+        const el = document.getElementById(`f-${id}`);
+        if(el) {
+            el.querySelector('.progress-bar').style.background = '#22c55e'; // Green
+            el.querySelector('.file-meta').innerText = text;
+        }
     }
 
+    function enableDownload(id, url, name) {
+        markComplete(id, 'Ready');
+        const btn = document.getElementById(`btn-dl-${id}`);
+        btn.style.display = 'block';
+        btn.onclick = () => {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = name;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        };
+        // Show dismiss button too
+        btn.nextElementSibling.style.display = 'block';
+    }
+
+    function dismissFile(id) {
+        // Revoke URL to free memory
+        if(fileRegistry[id] && fileRegistry[id].url) {
+            URL.revokeObjectURL(fileRegistry[id].url);
+            delete fileRegistry[id];
+        }
+        document.getElementById(`f-${id}`).remove();
+    }
+
+    // --- 7. HISTORY & STATUS ---
     function updateStatus(state, msg) {
         const dot = document.getElementById('status-dot');
-        const txt = document.getElementById('connection-status');
+        const txt = document.getElementById('status-text');
         dot.className = state === 'online' ? 'status-dot online' : 'status-dot';
         txt.innerText = msg;
     }
 
-    // --- 7. HISTORY & HELPERS ---
     function saveHistory(id) {
         let hist = JSON.parse(localStorage.getItem('drop_history') || '[]');
-        hist = hist.filter(h => h !== id);
-        hist.unshift(id);
-        if(hist.length > 4) hist.pop();
-        localStorage.setItem('drop_history', JSON.stringify(hist));
+        if(!hist.includes(id)) {
+            hist.unshift(id);
+            if(hist.length > 5) hist.pop();
+            localStorage.setItem('drop_history', JSON.stringify(hist));
+            renderHistory();
+        }
     }
 
     function renderHistory() {
         const hist = JSON.parse(localStorage.getItem('drop_history') || '[]');
-        const container = document.getElementById('recent-peers');
-        container.innerHTML = hist.map(id => `<div class="chip" onclick="connect('${id}')">${id}</div>`).join('');
+        const div = document.getElementById('recent-list');
+        div.innerHTML = hist.map(id => `<div class="chip" onclick="connect('${id}')">${id}</div>`).join('');
+    }
+
+    function clearHistory() {
+        localStorage.removeItem('drop_history');
+        renderHistory();
+        log("History cleared");
     }
 
     function copyId() {
-        const el = document.getElementById('my-id');
-        el.select();
+        document.getElementById('my-id').select();
         document.execCommand('copy');
-        notify("Copied!");
+        log("ID Copied to clipboard");
     }
 
-    function notify(msg) {
-        const t = document.getElementById('toast');
-        t.innerText = msg;
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 2000);
+    function resetUI() {
+        document.getElementById('btn-connect').disabled = false;
+        document.getElementById('btn-connect').innerText = "Connect";
     }
 </script>
 </body>
