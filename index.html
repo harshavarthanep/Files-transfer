@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InfinityDrop | Zen V7</title>
+    <title>InfinityDrop | Zen V8</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg: #050505;
             --surface: #111;
-            --surface-hover: #1a1a1a;
             --border: #333;
             --primary: #fff;
             --accent: #3b82f6;
@@ -68,10 +67,11 @@
         }
         .input-row:focus-within { border-color: var(--primary); }
 
-        input[type="text"] {
+        input[type="text"], textarea {
             flex: 1; background: transparent; border: none; color: white;
             font-family: 'JetBrains Mono', monospace; padding: 12px; outline: none; font-size: 0.9rem;
         }
+        textarea { resize: none; font-family: 'Inter', sans-serif; height: 45px; }
 
         .btn-icon {
             background: transparent; border: none; color: var(--text-sec);
@@ -102,25 +102,36 @@
         .drop-zone {
             border: 1px dashed var(--border);
             background: rgba(255,255,255,0.02);
-            border-radius: 12px; padding: 40px 20px;
+            border-radius: 12px; padding: 20px;
             text-align: center; cursor: pointer; transition: 0.2s;
-            position: relative;
+            position: relative; margin-bottom: 10px;
         }
         .drop-zone:hover { border-color: #666; background: rgba(255,255,255,0.05); }
         .drop-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 
-        /* --- File List --- */
-        .file-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
-        .file-item {
+        /* Text Input Area */
+        .text-sender {
+            display: flex; gap: 8px; margin-bottom: 10px;
+        }
+        .text-sender button {
+            background: var(--surface); border: 1px solid var(--border);
+            color: white; border-radius: 8px; padding: 0 15px; cursor: pointer;
+        }
+        .text-sender button:hover { background: #222; }
+
+        /* --- Feed List --- */
+        .feed-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+        
+        .feed-item {
             background: var(--surface); border: 1px solid var(--border);
             border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 8px;
             transition: 0.2s;
         }
-        .file-item:hover { border-color: #444; }
+        .feed-item.text-msg { border-left: 3px solid var(--accent); }
         
-        .file-head { display: flex; justify-content: space-between; align-items: center; }
-        .file-name { font-size: 0.85rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; max-width: 200px; }
-        .file-meta { font-size: 0.75rem; color: var(--text-sec); display: flex; gap: 10px; }
+        .item-head { display: flex; justify-content: space-between; align-items: center; }
+        .item-name { font-size: 0.85rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; max-width: 200px; }
+        .item-meta { font-size: 0.75rem; color: var(--text-sec); display: flex; gap: 10px; }
         
         .progress-bar { height: 4px; background: #222; border-radius: 2px; overflow: hidden; width: 100%; }
         .progress-fill { height: 100%; width: 0%; background: white; transition: width 0.1s; }
@@ -132,7 +143,13 @@
         }
         .btn-action:hover { background: #333; }
         .btn-action.primary { background: white; color: black; border: none; }
-        .btn-action.primary:hover { opacity: 0.9; }
+        
+        /* Message Content */
+        .msg-content { 
+            font-size: 0.85rem; color: #ddd; background: #000; 
+            padding: 8px; border-radius: 4px; word-break: break-all;
+            margin-top: 4px; border: 1px solid #222;
+        }
 
         /* --- Terminal Log --- */
         .log-box {
@@ -142,7 +159,7 @@
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.7rem;
             color: #555;
-            height: 120px;
+            height: 100px;
             overflow-y: auto;
             border-radius: 4px;
             margin-top: 10px;
@@ -192,15 +209,22 @@
     </div>
 
     <div id="panel-transfer" class="panel hidden">
-        <div class="drop-zone">
-            <input type="file" id="file-input" multiple>
-            <div style="font-size: 1.2rem; margin-bottom: 6px;">+ Add Files</div>
-            <div style="font-size: 0.75rem; color: var(--text-sec);">Drag & drop supported</div>
+        
+        <div class="text-sender">
+            <div class="input-row" style="flex:1;">
+                <textarea id="text-input" placeholder="Type a message or paste link..."></textarea>
+            </div>
+            <button onclick="sendText()">➤</button>
         </div>
 
-        <div id="file-queue" class="file-list"></div>
+        <div class="drop-zone">
+            <input type="file" id="file-input" multiple>
+            <div style="font-size: 0.9rem;">+ Upload Files</div>
+        </div>
 
-        <button class="btn-main" onclick="disconnect()" style="background: transparent; border: 1px solid var(--border); color: #888;">
+        <div id="feed-list" class="feed-list"></div>
+
+        <button class="btn-main" onclick="disconnect()" style="background: transparent; border: 1px solid var(--border); color: #888; margin-top: 10px;">
             Disconnect
         </button>
     </div>
@@ -316,14 +340,29 @@
         document.getElementById('panel-connect').classList.remove('hidden');
         document.getElementById('btn-connect').disabled = false;
         document.getElementById('btn-connect').innerText = "Connect";
-        document.getElementById('file-queue').innerHTML = ""; // Clear file list
+        document.getElementById('feed-list').innerHTML = ""; // Clear list
         updateStatus('online', 'Ready');
-        
-        // Clean memory
         fileRegistry = {};
     }
 
-    // --- 4. SENDER LOGIC ---
+    // --- 4. TEXT TRANSFER LOGIC ---
+    function sendText() {
+        const input = document.getElementById('text-input');
+        const text = input.value.trim();
+        if(!text) return;
+        
+        if(!conn || !conn.open) return log("Not connected", 'error');
+
+        // Send
+        conn.send({ type: 'text', content: text });
+        
+        // UI
+        createTextUI(text, 'sender');
+        input.value = "";
+        log("Message sent");
+    }
+
+    // --- 5. FILE SENDER LOGIC ---
     document.getElementById('file-input').addEventListener('change', (e) => {
         Array.from(e.target.files).forEach(file => {
             const fid = Math.random().toString(36).substr(2, 9);
@@ -376,8 +415,16 @@
         });
     }
 
-    // --- 5. RECEIVER LOGIC ---
+    // --- 6. RECEIVER LOGIC ---
     function handleData(data) {
+        // Text
+        if(data.type === 'text') {
+            log("Received text message", 'success');
+            createTextUI(data.content, 'receiver');
+            return;
+        }
+
+        // Files
         if(data.type === 'head') {
             log(`Receiving: ${data.name}`);
             fileRegistry[data.id] = { meta: data, buffer: [], received: 0 };
@@ -394,31 +441,46 @@
             const f = fileRegistry[data.id];
             log(`Received: ${f.meta.name}`, 'success');
             
-            // Create Blob URL
             const blob = new Blob(f.buffer, { type: f.meta.mime });
             f.url = URL.createObjectURL(blob);
-            f.buffer = []; // Free buffer memory
+            f.buffer = []; 
             
             enableDownload(data.id, f.url, f.meta.name);
         }
     }
 
-    // --- 6. UI HELPERS ---
+    // --- 7. UI MANAGERS ---
+    
+    // UI: Text Message
+    function createTextUI(content, type) {
+        const icon = type === 'sender' ? 'You:' : 'Peer:';
+        const html = `
+            <div class="feed-item text-msg">
+                <div class="item-head">
+                    <div class="item-meta"><strong>${icon}</strong></div>
+                    <button class="btn-action" style="display:block;" onclick="copyText(this, '${btoa(content)}')">Copy</button>
+                </div>
+                <div class="msg-content">${content}</div>
+            </div>`;
+        document.getElementById('feed-list').insertAdjacentHTML('afterbegin', html);
+    }
+
+    // UI: File
     function createFileUI(id, name, size, type) {
         const icon = type === 'upload' ? '⬆' : '⬇';
         const html = `
-            <div class="file-item" id="f-${id}">
-                <div class="file-head">
-                    <div class="file-name" title="${name}"><strong>${icon}</strong> ${name}</div>
-                    <div class="file-meta">${formatSize(size)}</div>
+            <div class="feed-item" id="f-${id}">
+                <div class="item-head">
+                    <div class="item-name" title="${name}"><strong>${icon}</strong> ${name}</div>
+                    <div class="item-meta">${formatSize(size)}</div>
                 </div>
                 <div class="progress-bar"><div class="progress-fill" style="width: 0%"></div></div>
                 <div style="display:flex; gap:10px;">
                     <button class="btn-action primary" id="btn-dl-${id}">Download</button>
-                    <button class="btn-action" onclick="dismissFile('${id}')">Dismiss</button>
+                    <button class="btn-action" onclick="dismissItem('f-${id}', '${id}')">Dismiss</button>
                 </div>
             </div>`;
-        document.getElementById('file-queue').insertAdjacentHTML('afterbegin', html);
+        document.getElementById('feed-list').insertAdjacentHTML('afterbegin', html);
     }
 
     function updateProgress(id, curr, total) {
@@ -429,8 +491,8 @@
     function markComplete(id, text) {
         const el = document.getElementById(`f-${id}`);
         if(el) {
-            el.querySelector('.progress-bar').style.background = '#22c55e'; // Green
-            el.querySelector('.file-meta').innerText = text;
+            el.querySelector('.progress-bar').style.background = '#22c55e';
+            el.querySelector('.item-meta').innerText = text;
         }
     }
 
@@ -446,20 +508,27 @@
             a.click();
             document.body.removeChild(a);
         };
-        // Show dismiss button too
+        // Show dismiss too
         btn.nextElementSibling.style.display = 'block';
     }
 
-    function dismissFile(id) {
-        // Revoke URL to free memory
-        if(fileRegistry[id] && fileRegistry[id].url) {
-            URL.revokeObjectURL(fileRegistry[id].url);
-            delete fileRegistry[id];
+    function dismissItem(elId, fileId) {
+        if(fileId && fileRegistry[fileId] && fileRegistry[fileId].url) {
+            URL.revokeObjectURL(fileRegistry[fileId].url);
+            delete fileRegistry[fileId];
         }
-        document.getElementById(`f-${id}`).remove();
+        document.getElementById(elId).remove();
     }
 
-    // --- 7. HISTORY & STATUS ---
+    // --- 8. HELPERS ---
+    function copyText(btn, b64) {
+        const text = atob(b64);
+        navigator.clipboard.writeText(text);
+        const original = btn.innerText;
+        btn.innerText = "Copied!";
+        setTimeout(() => btn.innerText = original, 1000);
+    }
+
     function updateStatus(state, msg) {
         const dot = document.getElementById('status-dot');
         const txt = document.getElementById('status-text');
@@ -492,7 +561,7 @@
     function copyId() {
         document.getElementById('my-id').select();
         document.execCommand('copy');
-        log("ID Copied to clipboard");
+        log("ID Copied");
     }
 
     function resetUI() {
